@@ -1,0 +1,4 @@
+1|Pijamas de algodon|25|1|-
+2|Pantuflas para dormir|60|1|-
+3|Antifaz para dormir|50|1|-
+4|Pijama de seda|30|1|-
