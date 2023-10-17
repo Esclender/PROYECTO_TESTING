@@ -36,6 +36,30 @@ public class frmFactura extends javax.swing.JInternalFrame {
         initComponents();
     }
     
+    public String getTxtArea() {
+        return txtArea.getText();
+    }
+    
+    public void setCantidad(String cantidad) {
+        cboCliente.setSelectedIndex(0);
+        txtCantidad.setText(cantidad);
+        btnAgregar.doClick();
+    }
+    
+    public void agregarProducto(String cantidad) {
+        cboCliente.setSelectedIndex(0);
+        txtCantidad.setText(cantidad);
+    }
+    
+    public int generateFactura() {
+        btnGrabar.doClick();
+        return this.facNumb;
+    }
+    
+    public String setCliente() {
+        return txtArea.getText();
+    }
+    
     private void crearFactura(){
         Border warnBorder = new LineBorder(new Color(250,0,0), 1);
         int total = 0;
@@ -148,6 +172,11 @@ public class frmFactura extends javax.swing.JInternalFrame {
         txtCantidad.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 txtCantidadFocusLost(evt);
+            }
+        });
+        txtCantidad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtCantidadActionPerformed(evt);
             }
         });
 
@@ -371,6 +400,10 @@ public class frmFactura extends javax.swing.JInternalFrame {
         txtArea.setText("");
         this.productos.clear();
     }//GEN-LAST:event_btnNuevaActionPerformed
+
+    private void txtCantidadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCantidadActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtCantidadActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

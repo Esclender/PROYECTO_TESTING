@@ -1,11 +1,20 @@
 package Clases;
 
+import Clases.Utilidades;
+import static Clases.Utilidades.isAdmin;
+import static Clases.Utilidades.existeProducto;
+import static Clases.Utilidades.validarUsuarioSinCaracteresEspeciales;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import static java.lang.Integer.parseInt;
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.Random;
+import java.util.Stack;
+import java.lang.reflect.*;
 
 public class Datos {
     
@@ -145,7 +154,6 @@ public class Datos {
             while ( (linea = br.readLine()) != null )   {
                 //extraemos id usuario
                 pos = linea.indexOf('|');
-                System.out.println("index " + pos);
                 aux = linea.substring(0, pos);
                 idUsuario = aux;
                 linea = linea.substring(pos + 1);
@@ -351,6 +359,8 @@ public class Datos {
         } 
     }
 
+    
+    
     //usuarios
     public String agregarUsuario(Usuario miUsuario) {
         if (contUsuarios == maxUsuario) {
@@ -466,6 +476,86 @@ public class Datos {
         
         return -1;
     }
+    public String clienteEspecifico(String idCliente, String idUsuario ) { //
+        
+        
+        for(int i = 0; i < contUsuarios; i++){
+            if (misUsuarios[i].getIdUsuario().equals(idUsuario)) 
+                if(!isAdmin(misUsuarios[i].getPerfil()))
+                    throw new RuntimeException("Usuario no valido");
+                    break;
+        }
+        
+        
+        for (int i = 0; i < contClientes; i++) {
+            if (misClientes[i].getIdCliente().equals(idCliente)) 
+                return misClientes[i].getIdCliente();
+        }
+        return "No encontrado";
+    }
+    
+    public String actualizarCliente(String idCliente, String idUsuario, Cliente miCliente){
+
+        for (int i = 0; i < contUsuarios; i++) {
+            if (misUsuarios[i].getIdUsuario().equals(idUsuario)) {
+                if (misUsuarios[i].getPerfil() != 1) 
+                   throw new RuntimeException("El usuario no tiene permiso para actualizar el cliente");
+                
+                break;
+            }
+        }
+        
+        int pos = this.posicionCliente(idCliente);
+        
+        if(pos == -1){
+            return "No encontrado";
+        }
+        
+        for (int index = 0; index < contClientes; index++) {
+            misClientes[pos].setTipoIdentificacion(miCliente.getTipoIdentificacion());
+            misClientes[pos].setNombres(miCliente.getNombres());
+            misClientes[pos].setApellidos(miCliente.getApellidos());
+            misClientes[pos].setDireccion(miCliente.getDireccion());
+            misClientes[pos].setTelefono(miCliente.getTelefono());
+            misClientes[pos].setIdDistrito(miCliente.getIdDistrito());
+            misClientes[pos].setFechaNacimiento(miCliente.getFechaNacimiento());
+        }
+
+        return "Actualizado exitosamente";
+    }
+    
+    /*int pos = this.posicionCliente(idCliente);
+        
+        if(pos == -1){
+            return "No encontrado";
+        }
+    **/
+    
+    public String eliminarCliente(String idCliente, String idUsuario) {
+        
+        for (int i = 0; i < contUsuarios; i++) {
+            if (misUsuarios[i].getIdUsuario().equals(idUsuario)) {
+                if (misUsuarios[i].getPerfil() != 1) 
+                   throw new RuntimeException("El usuario no tiene permiso para actualizar el cliente");
+                
+                break;
+            }
+        }
+        
+        int pos = this.posicionCliente(idCliente);
+        
+        if(pos == -1){
+            return "No encontrado";
+        }
+        
+        
+        for (int i = pos; i < contClientes - 1; i++) {
+            misClientes[i] = misClientes[i + 1];
+        }
+        contClientes--;
+        return "Cliente borrado correctamente";
+    }
+    
     public String agregarCliente(Cliente miCliente) {
         if (contClientes == maxCliente) {
             return "Se ha alcanzado el numero maximo de clientes";
@@ -486,6 +576,7 @@ public class Datos {
         misClientes[pos].setFechaIngreso(miCliente.getFechaNacimiento());
         return "Cliente modificado correctamente";
     }
+    
     public String borrarCliente(int pos) {
         for (int i = pos; i < contClientes - 1; i++) {
             misClientes[i] = misClientes[i + 1];
@@ -494,10 +585,230 @@ public class Datos {
         return "Cliente borrado correctamente";
     }
     
-     
+    public String agregarProductoEnFactura(Stack prudctos) {
+        String lista = "";
+        int index = 0 ;
+        
+        for (int i = 0; i < prudctos.size(); i++) {
+            boolean isExist = existeProducto((String) prudctos.get(i), misProductos);
+            if(isExist){
+                lista += prudctos.get(i) + "\n";
+            }
+         }
+        
+        return "Tus productos: \n" + lista ;
+    }
+    
+    public Stack generarFactura(Stack<Stack> productos) {
+        String lista = "";
+        Random rand = new Random();
+        int FN = rand.nextInt(1000);
+        Stack facturaYfn = new Stack();
+        
+        Producto[] data = misProductos;
+        int total = 0;
+        
+        lista += "***********************************************************************************************\n";
+        lista += "CLIENTE: " + productos.get(0).get(0) + "\n";
+        lista +="N° FACTURA: " + FN + "\n";
+        lista +="FECHA: " + LocalDate.now() + "\n";
+        lista +="PROVEDOR: MJ-STORE\n";
+        lista +="-----------------------------------------------------------------------------------------------------------------------\n";
+        lista +="CODIGO           PRODUCTO             PRECIO                                                             CANTIDAD\n";
+        lista +="-----------------------------------------------------------------------------------------------------------------------\n";
+        for(int i = 1; i < productos.size(); i++ ){
+            int pIn = (int) productos.get(i).get(0);
+            String id = data[pIn].getIdProducto();
+            String name = data[pIn].getDescripcion();
+            int precio = data[pIn].getPrecio();
+            String cantidad = (String) productos.get(i).get(1);
+            total += precio * parseInt(cantidad);
+            lista += id + "             "  + name + "    S/ " + precio  + "                                                                                    " + cantidad + "\n";
+          
+        }
+        
+        lista +="-----------------------------------------------------------------------------------------------------------------------\n";
+        lista +="                                                                                                                          TOTAL       ";
+        lista +="S/" + total + "\n";
+        lista +="***********************************************************************************************\n";
+        
+        facturaYfn.add(lista);
+        facturaYfn.add(FN);
+        
+        return  facturaYfn ;
+    }
+    /**for (int i = 0; i < contUsuarios; i++) {
+                pw.println(misUsuarios[i].toString());
+            }**/
+    
+    public void GrabarUsuario(Usuario user, String path) throws IllegalArgumentException, IllegalAccessException {
+        FileWriter fw = null;
+        PrintWriter pw = null;
+        String registro = "";
+        
+        for (Field field : user.getClass().getDeclaredFields()) {
+            field.setAccessible(true);
+            Object valor = field.get(user);
+            registro += valor + "|";
+        }
+       
+        
+        try {
+            File archivo = new File(path);
 
+            fw = new FileWriter(archivo);
+            pw = new PrintWriter(fw, true);
+            for (int i = 0; i < contUsuarios; i++) {
+                pw.println(misUsuarios[i].toString());
+            }
+            pw.println(registro );
+            
+            misUsuarios[contUsuarios] = user;
+            contUsuarios++;
+            
+            
+        } catch (Exception ex1) {
+            ex1.printStackTrace();
+        } finally {
+            try {
+                if (fw != null)
+                    fw.close();
 
-     
+            } catch (Exception ex2) {
+                ex2.printStackTrace();
+            }
+        }
+        
+    }
+    
+    public String cargarCliente() {
+        File archivo = null;
+        FileReader fr = null;
+        BufferedReader br = null;
+        String info = "";
+        
+        try {
+            archivo = new File("Data/clientes.txt");
+            fr = new FileReader(archivo);
+            br = new BufferedReader(fr);
+            
+            int pos;
+            String aux ;
+            String linea;
+            
+            String idCliente;
+            int tipoIdentificacion;
+            String nombres;
+            String apellidos;
+            String direccion;
+            String telefono;
+            int idDistrito = 0;
+            Date fechaNacimiento;
+            Date fechaIngreso;
+            
+            while ( (linea = br.readLine()) != null )   {
+                //extraemos id cliente
+                pos = linea.indexOf('|');
+                aux = linea.substring(0, pos);
+                idCliente = aux;
+                linea = linea.substring(pos + 1);
+                
+                 //extraemos tipo identificacion
+                pos = linea.indexOf('|');
+                aux = linea.substring(0, pos);
+                tipoIdentificacion = new Integer(aux);
+                linea = linea.substring(pos + 1);
+                
+                 //extraemos nombres
+                pos = linea.indexOf('|');
+                aux = linea.substring(0, pos);
+                nombres = aux;
+                linea = linea.substring(pos + 1);
+                
+                 //extraemos apellidos
+                pos = linea.indexOf('|');
+                aux = linea.substring(0, pos);
+                apellidos = aux;
+                linea = linea.substring(pos + 1);
+                
+                 //extraemos direccion
+                pos = linea.indexOf('|');
+                aux = linea.substring(0, pos);
+                direccion = aux;
+                linea = linea.substring(pos + 1);
+                
+                //extraemos telefono
+                pos = linea.indexOf('|');
+                aux = linea.substring(0, pos);
+                telefono = aux;
+                linea = linea.substring(pos + 1);
+                
+                 //extraemos id distrito
+                pos = linea.indexOf('|');
+                aux = linea.substring(0, pos);
+                idDistrito = new Integer(aux);
+                linea = linea.substring(pos + 1);
+                
+                //extraemos fecha nac. y fecha registro
+                pos = linea.indexOf('|');
+                aux = linea.substring(0, pos);
+                fechaNacimiento = Utilidades.stringToDate(aux);
+                linea = linea.substring(pos + 1);              
+                fechaIngreso = Utilidades.stringToDate(linea);
+                
+                Cliente miCliente;
+                miCliente = new Cliente(idCliente, tipoIdentificacion, nombres, apellidos, direccion, telefono, 
+                        idDistrito,fechaNacimiento, fechaIngreso);
+                System.out.println(miCliente);
+                info += miCliente + "\n";//SE AGREGA LA INFO
+                misClientes[contClientes] = miCliente;
+                contClientes++;
+            }
+            
+                
+            return info;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        
+        } finally   {
+            try {
+                if (fr != null)
+                    fr.close();
+                
+            } catch (Exception e2) {
+                e2.printStackTrace();
+            }
+        } 
+        return "";
+    }
+    
+    
+    public boolean validarLogin(String usuario, String clave) {
+        
+        
+        if (usuario == null || usuario.isEmpty() || clave == null || clave.isEmpty()) {
+            throw new RuntimeException("Usuario no valido");
+        }
+        
+        if (!validarUsuarioSinCaracteresEspeciales(usuario)) {
+            throw new RuntimeException("Caracteres especiales en usuario no valido");
+        }
+        
+        if (usuario == null || usuario.isEmpty() || clave == null || clave.isEmpty()) {
+            throw new RuntimeException("Password no valido");
+        }
+        
+        for (int i = 0; i < contUsuarios; i++) {
+            if (misUsuarios[i].getIdUsuario().equals(usuario) && 
+                    misUsuarios[i].getClave().equals(clave)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
      //factura
      public int getNumFac() {
          return numFactura;

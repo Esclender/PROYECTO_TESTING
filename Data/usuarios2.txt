@@ -1,0 +1,7 @@
+cramirez|christian|ramirez|12345|1
+elugo|Esclender Aantonio|Lugo Silva|1234|1
+elugo|Esclender Aantonio|Lugo Silva|1234|1
+cramirez|christian|ramirez|12345|1
+cramirez|christian|ramirez|12345|1
+elugo|Esclender Aantonio|Lugo Silva|1234|1
+elugo|Esclender Aantonio|Lugo Silva|1234|1|
